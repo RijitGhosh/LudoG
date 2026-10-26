@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ludo — Play with friends</title>
+<meta name="theme-color" content="#080d18">
+<meta name="description" content="A polished pass-and-play Ludo game for up to four friends, with optional CPU opponents.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b1220'/%3E%3Crect x='12' y='12' width='18' height='18' rx='5' fill='%23E4574C'/%3E%3Crect x='34' y='12' width='18' height='18' rx='5' fill='%232FA36B'/%3E%3Crect x='12' y='34' width='18' height='18' rx='5' fill='%23E7A81D'/%3E%3Crect x='34' y='34' width='18' height='18' rx='5' fill='%233D7DE0'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="bg-orbs" aria-hidden="true">
+  <span class="orb o1"></span>
+  <span class="orb o2"></span>
+  <span class="orb o3"></span>
+  <span class="orb o4"></span>
+</div>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div class="brand-text">
+        <h1>Ludo</h1>
+        <p>Roll. Race. Rule the board.</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" id="soundBtn" aria-pressed="true">Sound on</button>
+      <button class="btn btn-ghost" id="rulesBtn">Rules</button>
+      <button class="btn btn-light" id="newBtn">New game</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="board-area">
+      <div class="board-frame">
+        <svg id="board" viewBox="0 0 900 900" role="img" aria-label="Ludo board"></svg>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Game panel">
+      <div class="turn-card" id="turnCard">
+        <div class="turn-top">
+          <span class="turn-dot" id="turnDot"></span>
+          <span class="eyebrow" id="turnLabel">Current turn</span>
+        </div>
+        <div class="turn-name" id="turnName">Red</div>
+        <div class="turn-sub" id="turnSub">Tap the die to roll</div>
+      </div>
+
+      <div class="dice-card">
+        <button class="die" id="die" data-face="6" aria-label="Roll the dice">
+          <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+          <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+          <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+        </button>
+        <div class="dice-info">
+          <div class="dice-hint" id="diceHint">Roll the dice</div>
+          <div class="dice-sub" id="diceSub">Tap the die or press Space</div>
+        </div>
+      </div>
+
+      <div class="players" id="players"></div>
+
+      <div class="log-card">
+        <h3>Match log</h3>
+        <ul id="log" class="log"></ul>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    <span>Pass the device — only the player whose turn it is should roll.</span>
+  </footer>
+</div>
+
+<!-- Setup -->
+<div class="modal open" id="setupModal" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+  <div class="modal-card setup-card">
+    <button class="modal-x" id="setupClose" aria-label="Close setup" hidden>×</button>
+    <div class="modal-head">
+      <div class="kicker">New match</div>
+      <h2 id="setupTitle">Who's playing?</h2>
+      <p>Four seats, one board. Set any seat to <b>CPU</b> to play against the computer, or leave it <b>Off</b> for a two or three player game.</p>
+    </div>
+
+    <div class="presets" id="presets">
+      <button class="chip is-on" data-preset="friends">4 friends</button>
+      <button class="chip" data-preset="mix">2 + 2 CPU</button>
+      <button class="chip" data-preset="solo">Solo vs CPU</button>
+    </div>
+
+    <div class="seats" id="seats"></div>
+
+    <button class="btn btn-primary btn-block" id="startBtn">Start game</button>
+    <p class="fine" id="setupFine">Roll a 6 to leave the yard · exact roll to finish</p>
+  </div>
+</div>
+
+<!-- Rules -->
+<div class="modal" id="rulesModal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+  <div class="modal-card">
+    <button class="modal-x" data-close="rulesModal" aria-label="Close rules">×</button>
+    <div class="modal-head">
+      <div class="kicker">How to play</div>
+      <h2 id="rulesTitle">Ludo in thirty seconds</h2>
+    </div>
+    <ul class="rules">
+      <li><b>Get out.</b> Roll a 6 to move a piece from your yard onto your coloured start square.</li>
+      <li><b>Go round.</b> Travel clockwise around the track, then up your own colour lane into the centre.</li>
+      <li><b>Roll again.</b> A 6 earns another roll — but three 6s in a row and you lose the turn.</li>
+      <li><b>Capture.</b> Land on an opponent to send it back to their yard, and earn another roll.</li>
+      <li><b>Safe squares.</b> Coloured start squares and starred squares can't be captured.</li>
+      <li><b>Come home.</b> You need the exact number to step into the centre.</li>
+      <li><b>Win.</b> The first player to bring all four pieces home wins.</li>
+    </ul>
+    <button class="btn btn-secondary btn-block" data-close="rulesModal">Got it</button>
+  </div>
+</div>
+
+<!-- Winner -->
+<div class="modal" id="winModal" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+  <div class="modal-card win-card" id="winCard">
+    <div class="win-orb" aria-hidden="true">
+      <svg viewBox="0 0 48 48" width="34" height="34"><path d="M24 4l5.6 11.4L42 17.2l-9 8.8 2.1 12.4L24 32.6 12.9 38.4 15 26 6 17.2l12.4-1.8z" fill="#F7CE68"/></svg>
+    </div>
+    <div class="kicker">Winner</div>
+    <h2 id="winTitle">Red wins!</h2>
+    <p class="win-sub" id="winSub">All four pieces are home.</p>
+    <div class="row">
+      <button class="btn btn-primary" id="againBtn">Play again</button>
+      <button class="btn btn-secondary" id="changeBtn">Change players</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="confetti" aria-hidden="true"></canvas>
+<noscript><p style="color:#fff;text-align:center;padding:24px">This game needs JavaScript enabled.</p></noscript>
+
+<script src="js/game.js"></script>
+<script src="js/board.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>

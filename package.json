@@ -1,0 +1,12 @@
+{
+  "name": "ludo",
+  "version": "1.0.0",
+  "description": "Pass-and-play Ludo for up to four friends on one board, with optional CPU opponents.",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["ludo", "board-game", "game", "multiplayer"],
+  "license": "MIT"
+}
